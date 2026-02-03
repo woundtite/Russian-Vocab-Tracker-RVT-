@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russian Vocabulary Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>🇷🇺 VocabTracker</h2>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#" class="nav-link active" data-page="dashboard">📊 Dashboard</a></li>
+                <li><a href="#" class="nav-link" data-page="vocabulary">📝 Vocabulary</a></li>
+                <li><a href="#" class="nav-link" data-page="exports">📤 Exports</a></li>
+                <li><a href="#" class="nav-link" data-page="settings">⚙️ Settings</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <p>Updated: <span id="sidebarTime"></span></p>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-content">
+                    <h1>Russian Vocabulary Tracker</h1>
+                    <p class="subtitle">Master Russian vocabulary with smart learning tools</p>
+                </div>
+                <div class="header-actions">
+                    <span id="dateDisplay" class="date-badge"></span>
+                </div>
+            </header>
+
+        <main>
+            <!-- Dashboard Page -->
+            <section id="dashboard" class="page-content active">
+                <div class="page-header">
+                    <h2>Dashboard</h2>
+                </div>
+
+                <!-- Word Type Selector Modal (hidden by default) -->
+                <div id="wordTypeModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Select Word Type</h3>
+                            <button class="modal-close" onclick="document.getElementById('wordTypeModal').style.display = 'none';">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Low confidence detection. Please select the word type:</p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
+                                <button class="btn btn-secondary" onclick="tracker.selectWordType('noun')" style="padding: 12px;">
+                                    📦 Noun
+                                </button>
+                                <button class="btn btn-secondary" onclick="tracker.selectWordType('verb')" style="padding: 12px;">
+                                    ⚡ Verb
+                                </button>
+                                <button class="btn btn-secondary" onclick="tracker.selectWordType('adjective')" style="padding: 12px;">
+                                    ✨ Adjective
+                                </button>
+                                <button class="btn btn-secondary" onclick="tracker.selectWordType('adverb')" style="padding: 12px;">
+                                    🎯 Adverb
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Category Modal (hidden by default) -->
+                <div id="customCategoryModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Create Custom Category</h3>
+                            <button class="modal-close" onclick="document.getElementById('customCategoryModal').style.display = 'none';">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Add a new study category:</p>
+                            <div style="margin-top: 15px;">
+                                <input 
+                                    type="text" 
+                                    id="customCategoryName" 
+                                    placeholder="Category name (e.g., 'Food Words')" 
+                                    class="form-input"
+                                    style="margin-bottom: 10px;"
+                                >
+                                <select id="customCategoryEmoji" class="form-input" style="margin-bottom: 10px;">
+                                    <option value="📝">📝 Notes</option>
+                                    <option value="🍔">🍔 Food</option>
+                                    <option value="🏠">🏠 Home</option>
+                                    <option value="👨‍👩‍👧‍👦">👨‍👩‍👧‍👦 Family</option>
+                                    <option value="🚗">🚗 Travel</option>
+                                    <option value="💼">💼 Work</option>
+                                    <option value="🎨">🎨 Art</option>
+                                    <option value="⚽">⚽ Sports</option>
+                                    <option value="🎵">🎵 Music</option>
+                                    <option value="📚">📚 Academic</option>
+                                    <option value="🏥">🏥 Medical</option>
+                                    <option value="🌍">🌍 Geography</option>
+                                    <option value="💰">💰 Money</option>
+                                    <option value="🎓">🎓 Education</option>
+                                    <option value="🔬">🔬 Science</option>
+                                </select>
+                                <button class="btn btn-primary" onclick="tracker.createCustomCategory()" style="width: 100%;">
+                                    Create Category
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Word Section -->
+                <div class="card add-word-card">
+                    <h3>Add New Word</h3>
+                    <div class="form-grid">
+                        <div style="position: relative;">
+                            <input 
+                                type="text" 
+                                id="wordInput" 
+                                placeholder="Russian word" 
+                                class="form-input"
+                            >
+                            <div id="wordLoading" class="loading-indicator" style="display: none;">
+                                <span class="spinner"></span>
+                            </div>
+                        </div>
+                    <div style="position: relative;">
+                            <input 
+                                type="text" 
+                                id="translationInput" 
+                                placeholder="English translation (auto-fill available)" 
+                                class="form-input"
+                            >
+                            <div id="translationSuggestions" class="suggestions-popup" style="display: none;"></div>
+                            <div id="wordCategory" class="word-category-display" style="display: none;"></div>
+                        </div>
+                        <input 
+                            type="text" 
+                            id="sentenceInput" 
+                            placeholder="Example sentence (optional)" 
+                            class="form-input"
+                        >
+                        <div style="display: flex; gap: 8px;">
+                            <select id="categorySelect" class="form-input" style="flex: 1;">
+                                <option value="">Select Category</option>
+                                <option value="review">📋 Review</option>
+                                <option value="supplemental">📚 Supplemental</option>
+                                <option value="critical">⭐ Critical</option>
+                                <option value="lesson">📖 Lesson</option>
+                            </select>
+                            <button class="btn btn-secondary" onclick="document.getElementById('customCategoryModal').style.display = 'flex';" style="padding: 12px 16px;">
+                                ➕ New
+                            </button>
+                        </div>
+                    </div>
+                    <button id="addBtn" class="btn btn-primary btn-lg">+ Add Word</button>
+                </div>
+
+                <!-- Stats Section -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalCount">0</div>
+                        <div class="stat-label">Total Words</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="reviewCount">0</div>
+                        <div class="stat-label">Review</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="supplementalCount">0</div>
+                        <div class="stat-label">Supplemental</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="criticalCount">0</div>
+                        <div class="stat-label">Critical</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="lessonCount">0</div>
+                        <div class="stat-label">Lesson</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Vocabulary Page -->
+            <section id="vocabulary" class="page-content">
+                <div class="page-header">
+                    <h2>Vocabulary List</h2>
+                </div>
+
+                <div class="card">
+                    <!-- Filter & Search -->
+                    <div class="filter-section">
+                        <div class="search-box">
+                            <input 
+                                type="text" 
+                                id="searchInput" 
+                                placeholder="🔍 Search words..." 
+                                class="form-input"
+                            >
+                        </div>
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" data-filter="all" data-filter-type="category">All Words</button>
+                            <button class="filter-btn" data-filter="review" data-filter-type="category">📋 Review</button>
+                            <button class="filter-btn" data-filter="supplemental" data-filter-type="category">📚 Supplemental</button>
+                            <button class="filter-btn" data-filter="critical" data-filter-type="category">⭐ Critical</button>
+                            <button class="filter-btn" data-filter="lesson" data-filter-type="category">📖 Lesson</button>
+                        </div>
+                        <div class="filter-buttons" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
+                            <button class="filter-btn" data-filter="all-types" data-filter-type="wordtype">Show All Types</button>
+                            <button class="filter-btn" data-filter="noun" data-filter-type="wordtype">📦 Nouns</button>
+                            <button class="filter-btn" data-filter="verb" data-filter-type="wordtype">⚡ Verbs</button>
+                            <button class="filter-btn" data-filter="adjective" data-filter-type="wordtype">✨ Adjectives</button>
+                            <button class="filter-btn" data-filter="adverb" data-filter-type="wordtype">🎯 Adverbs</button>
+                        </div>
+                    </div>
+
+                    <!-- Vocabulary List -->
+                    <div id="vocabList" class="vocab-list">
+                        <p class="empty-state">No words added yet. Start from the Dashboard!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Exports Page -->
+            <section id="exports" class="page-content">
+                <div class="page-header">
+                    <h2>Export & Manage Lists</h2>
+                </div>
+
+                <div class="export-container">
+                    <!-- Export Options -->
+                    <div class="card export-card">
+                        <h3>📤 Export to Study Platforms</h3>
+                        <div class="export-options">
+                            <div class="export-option">
+                                <div class="option-header">
+                                    <h4>Anki</h4>
+                                    <p>Spaced repetition flashcards</p>
+                                </div>
+                                <select id="ankiCategory" class="form-input">
+                                    <option value="all">All Words</option>
+                                    <option value="review">Review</option>
+                                    <option value="supplemental">Supplemental</option>
+                                    <option value="critical">Critical</option>
+                                    <option value="lesson">Lesson</option>
+                                </select>
+                                <button class="btn btn-secondary" id="exportAnkiBtn">Export to Anki</button>
+                            </div>
+
+                            <div class="export-option">
+                                <div class="option-header">
+                                    <h4>Quizlet</h4>
+                                    <p>Interactive study sets</p>
+                                </div>
+                                <select id="quizletCategory" class="form-input">
+                                    <option value="all">All Words</option>
+                                    <option value="review">Review</option>
+                                    <option value="supplemental">Supplemental</option>
+                                    <option value="critical">Critical</option>
+                                    <option value="lesson">Lesson</option>
+                                </select>
+                                <button class="btn btn-secondary" id="exportQuizletBtn">Export to Quizlet</button>
+                            </div>
+
+                            <div class="export-option">
+                                <div class="option-header">
+                                    <h4>JSON Backup</h4>
+                                    <p>Full vocabulary backup</p>
+                                </div>
+                                <button class="btn btn-secondary" id="exportJsonBtn">Download JSON</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Import Section -->
+                    <div class="card export-card">
+                        <h3>📥 Import & Restore</h3>
+                        <div class="import-section">
+                            <p>Restore your vocabulary from a backup file</p>
+                            <button class="btn btn-secondary" id="importBtn">Choose File</button>
+                            <input type="file" id="fileInput" accept=".json" style="display: none;">
+                            <div id="importStatus" class="import-status"></div>
+                        </div>
+                    </div>
+
+                    <!-- Export History -->
+                    <div class="card export-card">
+                        <h3>📊 Export History</h3>
+                        <div id="exportHistory" class="export-history">
+                            <p class="empty-state">No exports yet</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Page -->
+            <section id="settings" class="page-content">
+                <div class="page-header">
+                    <h2>Settings & Data</h2>
+                </div>
+
+                <div class="settings-container">
+                    <div class="card settings-card">
+                        <h3>⚠️ Danger Zone</h3>
+                        <div class="danger-actions">
+                            <p>These actions cannot be undone</p>
+                            <button class="btn btn-danger" id="clearDataBtn">Clear All Data</button>
+                        </div>
+                    </div>
+
+                    <div class="card settings-card">
+                        <h3>ℹ️ About</h3>
+                        <div class="about-info">
+                            <p><strong>Russian Vocabulary Tracker v2.0</strong></p>
+                            <p>Master Russian with smart vocabulary management</p>
+                            <p id="lastUpdatedInfo" class="last-updated"></p>
+                            <p id="dataStatsInfo" class="data-stats"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Verb Conjugation Modal (v2.4) -->
+        <div id="conjugationModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h3 id="modalVerbTitle">Verb Conjugations</h3>
+                        <div id="verbMetadata" style="font-size: 0.9em; color: #666; margin-top: 4px;"></div>
+                    </div>
+                    <button class="modal-close" onclick="document.getElementById('conjugationModal').style.display = 'none';">&times;</button>
+                </div>
+                <div class="modal-tabs" style="display: flex; gap: 0; border-bottom: 2px solid #ddd;">
+                    <button id="presentTab" class="modal-tab-btn active" onclick="tracker.switchConjugationTab('present')">Present Tense</button>
+                    <button id="pastTab" class="modal-tab-btn" onclick="tracker.switchConjugationTab('past')">Past Tense</button>
+                </div>
+                <div class="modal-body">
+                    <div id="conjugationChart" class="conjugation-chart"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Russian Vocabulary Tracker • Powered by Smart Learning Technology</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

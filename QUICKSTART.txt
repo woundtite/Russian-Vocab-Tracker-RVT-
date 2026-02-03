@@ -1,0 +1,56 @@
+RVT - Russian Vocabulary Tracker v2.5 - QUICK START
+====================================================
+
+LAUNCH:
+  ./rvt.sh
+
+WHAT IT DOES:
+  1. Kills existing server on port 8000
+  2. Starts Python HTTP server  
+  3. Auto-opens http://localhost:8000 in browser
+  4. App loads with dashboard
+
+FIRST STEPS:
+  1. Type Russian word (e.g., "привет")
+  2. Translation auto-fills
+  3. Select category (Review/Supplemental/Critical/Lesson)
+  4. Click "+ Add Word"
+  5. Word fetches: conjugations, synonyms, stress marks
+
+EXPORT YOUR VOCABULARY:
+  Settings → Export as JSON → Save file
+
+FEATURES:
+  ✓ Live conjugations (OpenRussian API)
+  ✓ Live translations (MyMemory API)
+  ✓ Live synonyms (Wiktionary API)
+  ✓ Stress marks with bold formatting
+  ✓ "Did you mean?" spell-check suggestions
+  ✓ Filter & search vocabulary
+  ✓ Export/import as JSON
+
+TROUBLESHOOTING:
+  Port 8000 in use?
+    lsof -ti:8000 | xargs kill -9
+  
+  No translation showing?
+    Check internet connection
+  
+  Words not saving?
+    Check browser console (F12)
+
+DOCUMENTATION:
+  - V2.5_README.md - Comprehensive guide
+  - V2.5_COMPLETION.md - Architecture details
+
+REQUIREMENTS:
+  ✓ Python 3
+  ✓ Modern web browser
+  ✓ Internet connection
+
+SUPPORTED BROWSERS:
+  ✓ Chrome/Edge (v90+)
+  ✓ Firefox (v88+)
+  ✓ Safari (v14+)
+
+Ready to learn Russian? Run: ./rvt.sh
